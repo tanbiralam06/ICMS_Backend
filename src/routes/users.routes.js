@@ -19,6 +19,11 @@ router.get(
   userController.getAllUsers,
 );
 router.get(
+  "/:id/details",
+  roleMiddleware(["Admin", "HR", "Manager"]),
+  userController.getUserDetails,
+);
+router.get(
   "/:id",
   roleMiddleware(["Admin", "HR", "Manager"]),
   userController.getUserById,

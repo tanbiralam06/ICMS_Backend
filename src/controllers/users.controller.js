@@ -89,6 +89,15 @@ export const updateProfile = async (req, res, next) => {
   }
 };
 
+export const getUserDetails = async (req, res, next) => {
+  try {
+    const details = await userService.getUserDetailsById(req.params.id);
+    res.json({ success: true, data: details });
+  } catch (err) {
+    next(err);
+  }
+};
+
 export default {
   createUser,
   getAllUsers,
@@ -97,4 +106,5 @@ export default {
   updateUserStatus,
   getMe,
   updateProfile,
+  getUserDetails,
 };
