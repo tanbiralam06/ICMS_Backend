@@ -1,4 +1,4 @@
-import Department from '../models/departments.model.js';
+import Department from "../models/departments.model.js";
 
 export const createDepartment = async (data) => {
   const department = new Department(data);
@@ -6,11 +6,18 @@ export const createDepartment = async (data) => {
 };
 
 export const getAllDepartments = async (query) => {
-  return await Department.find(query).populate("managerId", "fullName email");
+  const { search, ...filter } = query;
+  if (search) {
+    filter.name = { $regex: search, $options: "i" };
+  }
+  return await Department.find(filter).populate("managerId", "fullName email");
 };
 
 export const getDepartmentById = async (id) => {
-  const department = await Department.findById(id).populate("managerId", "fullName email");
+  const department = await Department.findById(id).populate(
+    "managerId",
+    "fullName email",
+  );
   if (!department) {
     throw { statusCode: 404, message: "Department not found" };
   }
