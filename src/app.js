@@ -1,17 +1,18 @@
-import express from 'express';
-import cors from 'cors';
-import helmet from 'helmet';
-import morgan from 'morgan';
-import swaggerUi from 'swagger-ui-express';
-import YAML from 'yamljs';
-import errorHandler from './middlewares/error.middleware.js';
+import express from "express";
+import cors from "cors";
+import helmet from "helmet";
+import morgan from "morgan";
+import swaggerUi from "swagger-ui-express";
+import YAML from "yamljs";
+import errorHandler from "./middlewares/error.middleware.js";
 
-import authRoutes from './routes/auth.routes.js';
-import departmentRoutes from './routes/departments.routes.js';
-import userRoutes from './routes/users.routes.js';
-import attendanceRoutes from './routes/attendance.routes.js';
-import leaveRoutes from './routes/leaves.routes.js';
-import taskRoutes from './routes/tasks.routes.js';
+import authRoutes from "./routes/auth.routes.js";
+import departmentRoutes from "./routes/departments.routes.js";
+import userRoutes from "./routes/users.routes.js";
+import attendanceRoutes from "./routes/attendance.routes.js";
+import leaveRoutes from "./routes/leaves.routes.js";
+import taskRoutes from "./routes/tasks.routes.js";
+import dashboardRoutes from "./routes/dashboard.routes.js";
 
 const app = express();
 
@@ -19,11 +20,11 @@ const app = express();
 app.use(helmet());
 app.use(cors());
 app.use(express.json());
-app.use(morgan('dev'));
+app.use(morgan("dev"));
 
 // Swagger
-const swaggerDocument = YAML.load('./src/docs/openapi.yaml');
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+const swaggerDocument = YAML.load("./src/docs/openapi.yaml");
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 // Routes
 app.use("/api/auth", authRoutes);
@@ -32,6 +33,7 @@ app.use("/api/users", userRoutes);
 app.use("/api/attendance", attendanceRoutes);
 app.use("/api/leaves", leaveRoutes);
 app.use("/api/tasks", taskRoutes);
+app.use("/api/dashboard", dashboardRoutes);
 
 app.get("/", (req, res) => {
   res.send("ICMS Backend API is running...");
