@@ -1,4 +1,4 @@
-import Task from '../models/tasks.model.js';
+import Task from "../models/tasks.model.js";
 
 export const createTask = async (userId, data) => {
   const task = new Task({
@@ -26,7 +26,12 @@ export const getAllTasks = async (query) => {
 
   const total = await Task.countDocuments(filter);
 
-  return { tasks, total, page: parseInt(page), pages: Math.ceil(total / limit) };
+  return {
+    tasks,
+    total,
+    page: parseInt(page),
+    pages: Math.ceil(total / limit),
+  };
 };
 
 export const getTaskById = async (id) => {
@@ -50,15 +55,33 @@ export const updateTask = async (id, data) => {
   return task;
 };
 
-export const updateTaskStatus = async (id, status) => {
-  const task = await Task.findByIdAndUpdate(
-    id,
-    { status },
-    { new: true }
-  );
+export const updateTaskStatus = async (id, status, user) => {
+  const task = await Task.findById(id)
+    .populate("assignedUsers", "_id")
+    .populate("createdBy", "_id");
+
   if (!task) {
     throw { statusCode: 404, message: "Task not found" };
   }
+
+  // Permission check: Allow Admin, Creator, or Assigned Users
+  const isAdmin = user.roles && user.roles.includes("Admin");
+  const isCreator = task.createdBy._id.toString() === user.id;
+  const isAssignedUser = task.assignedUsers.some(
+    (assignedUser) => assignedUser._id.toString() === user.id,
+  );
+
+  if (!isAdmin && !isCreator && !isAssignedUser) {
+    throw {
+      statusCode: 403,
+      message: "You don't have permission to update this task",
+    };
+  }
+
+  // Update the status
+  task.status = status;
+  await task.save();
+
   return task;
 };
 
@@ -66,9 +89,9 @@ export const assignTask = async (id, userIds) => {
   const task = await Task.findByIdAndUpdate(
     id,
     { assignedUsers: userIds },
-    { new: true }
+    { new: true },
   ).populate("assignedUsers", "fullName email");
-  
+
   if (!task) {
     throw { statusCode: 404, message: "Task not found" };
   }

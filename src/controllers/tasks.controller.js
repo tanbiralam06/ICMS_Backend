@@ -1,4 +1,4 @@
-import taskService from '../services/tasks.service.js';
+import taskService from "../services/tasks.service.js";
 
 export const createTask = async (req, res, next) => {
   try {
@@ -39,7 +39,11 @@ export const updateTask = async (req, res, next) => {
 export const updateTaskStatus = async (req, res, next) => {
   try {
     const { status } = req.body;
-    const task = await taskService.updateTaskStatus(req.params.id, status);
+    const task = await taskService.updateTaskStatus(
+      req.params.id,
+      status,
+      req.user,
+    );
     res.json({ success: true, data: task });
   } catch (err) {
     next(err);
@@ -48,7 +52,7 @@ export const updateTaskStatus = async (req, res, next) => {
 
 export const assignTask = async (req, res, next) => {
   try {
-    const { assignedUsers } = req.body; 
+    const { assignedUsers } = req.body;
     const task = await taskService.assignTask(req.params.id, assignedUsers);
     res.json({ success: true, data: task });
   } catch (err) {
