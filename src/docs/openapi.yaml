@@ -1,0 +1,67 @@
+openapi: 3.0.0
+info:
+  title: ICMS Backend API
+  description: API documentation for Internal Company Management System
+  version: 1.0.0
+servers:
+  - url: http://localhost:5000/api
+    description: Local Development Server
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+security:
+  - bearerAuth: []
+paths:
+  /auth/login:
+    post:
+      summary: Login user
+      tags: [Auth]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                password:
+                  type: string
+      responses:
+        200:
+          description: Successful login
+  /users:
+    get:
+      summary: Get all users
+      tags: [Users]
+      responses:
+        200:
+          description: List of users
+    post:
+      summary: Create a user
+      tags: [Users]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                fullName:
+                  type: string
+                employeeId:
+                  type: string
+                password:
+                  type: string
+                roleIds:
+                  type: array
+                  items:
+                    type: string
+      responses:
+        201:
+          description: User created
