@@ -1,4 +1,4 @@
-import userService from '../services/users.service.js';
+import userService from "../services/users.service.js";
 
 export const createUser = async (req, res, next) => {
   try {
@@ -49,13 +49,45 @@ export const updateUserStatus = async (req, res, next) => {
 };
 
 export const getMe = async (req, res, next) => {
-    try {
-        const user = await userService.getUserById(req.user.id);
-        res.json({ success: true, data: user });
-    } catch (err) {
-        next(err);
+  try {
+    const user = await userService.getUserById(req.user.id);
+    res.json({ success: true, data: user });
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const updateProfile = async (req, res, next) => {
+  try {
+    const allowedUpdates = [
+      "phoneNumber",
+      "address",
+      "dateOfBirth",
+      "gender",
+      "bio",
+      "profilePicture",
+      "emergencyContact",
+    ];
+
+    const updates = Object.keys(req.body)
+      .filter((key) => allowedUpdates.includes(key))
+      .reduce((obj, key) => {
+        obj[key] = req.body[key];
+        return obj;
+      }, {});
+
+    if (Object.keys(updates).length === 0) {
+      return res
+        .status(400)
+        .json({ success: false, message: "No valid updates provided" });
     }
-}
+
+    const user = await userService.updateUser(req.user.id, updates);
+    res.json({ success: true, data: user });
+  } catch (err) {
+    next(err);
+  }
+};
 
 export default {
   createUser,
@@ -63,5 +95,6 @@ export default {
   getUserById,
   updateUser,
   updateUserStatus,
-  getMe
+  getMe,
+  updateProfile,
 };
