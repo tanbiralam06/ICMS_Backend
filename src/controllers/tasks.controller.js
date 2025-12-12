@@ -29,7 +29,11 @@ export const getTaskById = async (req, res, next) => {
 
 export const updateTask = async (req, res, next) => {
   try {
-    const task = await taskService.updateTask(req.params.id, req.body);
+    const task = await taskService.updateTask(
+      req.params.id,
+      req.body,
+      req.user,
+    );
     res.json({ success: true, data: task });
   } catch (err) {
     next(err);

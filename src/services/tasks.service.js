@@ -44,14 +44,32 @@ export const getTaskById = async (id) => {
   return task;
 };
 
-export const updateTask = async (id, data) => {
+export const updateTask = async (id, data, user) => {
+  const taskToCheck = await Task.findById(id).populate("createdBy", "_id");
+
+  if (!taskToCheck) {
+    throw { statusCode: 404, message: "Task not found" };
+  }
+
+  // Permission check: Allow Admin or Creator
+  const isAdmin = user.roles && user.roles.includes("Admin");
+  const isCreator = taskToCheck.createdBy._id.toString() === user.id;
+
+  if (!isAdmin && !isCreator) {
+    throw {
+      statusCode: 403,
+      message: "You don't have permission to update this task details",
+    };
+  }
+
   const task = await Task.findByIdAndUpdate(id, data, {
     new: true,
     runValidators: true,
-  });
-  if (!task) {
-    throw { statusCode: 404, message: "Task not found" };
-  }
+  })
+    .populate("assignedUsers", "fullName email")
+    .populate("createdBy", "fullName");
+
+  // Note: timestamps (updatedAt) are handled automatically by mongoose { timestamps: true } option in model
   return task;
 };
 
