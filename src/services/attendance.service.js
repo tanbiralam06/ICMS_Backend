@@ -1,6 +1,7 @@
 import Attendance from "../models/attendance.model.js";
 import User from "../models/users.model.js";
 import Leave from "../models/leaves.model.js";
+import Holiday from "../models/holidays.model.js";
 
 const getTodayStart = () => {
   const now = new Date();
@@ -69,11 +70,20 @@ export const getDailyAttendance = async (dateStr) => {
   }).lean();
 
   // 3. Get approved leaves for the date
+  // 3. Get approved leaves for the date
   const leaveRecords = await Leave.find({
     status: "Approved",
     fromDate: { $lte: endOfDay },
     toDate: { $gte: startOfDay },
   }).lean();
+
+  // 3.5. Check for Holiday or Sunday
+  // We check if the query date matches any holiday record
+  const holiday = await Holiday.findOne({
+    date: startOfDay,
+  }).lean();
+
+  const isSunday = date.getDay() === 0;
 
   // 4. Merge data
   const result = users.map((user) => {
@@ -99,6 +109,10 @@ export const getDailyAttendance = async (dateStr) => {
       totalHours = attendance.totalHours;
     } else if (leave) {
       status = "On Leave"; // Or specific leave type like "Sick Leave"
+    } else if (holiday) {
+      status = "Holiday";
+    } else if (isSunday) {
+      status = "Weekly Off";
     }
 
     return {
@@ -111,6 +125,7 @@ export const getDailyAttendance = async (dateStr) => {
       punchIn,
       punchOut,
       totalHours,
+      holidayName: holiday ? holiday.name : null,
     };
   });
 

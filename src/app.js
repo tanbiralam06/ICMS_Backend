@@ -14,6 +14,7 @@ import leaveRoutes from "./routes/leaves.routes.js";
 import taskRoutes from "./routes/tasks.routes.js";
 import commentRoutes from "./routes/comments.routes.js";
 import dashboardRoutes from "./routes/dashboard.routes.js";
+import holidayRoutes from "./routes/holidays.routes.js";
 
 const app = express();
 
@@ -32,6 +33,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/departments", departmentRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/attendance", attendanceRoutes);
+app.use("/api/holidays", holidayRoutes);
 app.use("/api/leaves", leaveRoutes);
 app.use("/api/tasks", taskRoutes);
 app.use("/api/comments", commentRoutes);
