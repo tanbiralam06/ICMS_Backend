@@ -116,6 +116,28 @@ export const assignTask = async (id, userIds) => {
   return task;
 };
 
+export const deleteTask = async (id, user) => {
+  const task = await Task.findById(id).populate("createdBy", "_id");
+
+  if (!task) {
+    throw { statusCode: 404, message: "Task not found" };
+  }
+
+  // Permission check: Allow Admin or Creator
+  const isAdmin = user.roles && user.roles.includes("Admin");
+  const isCreator = task.createdBy._id.toString() === user.id;
+
+  if (!isAdmin && !isCreator) {
+    throw {
+      statusCode: 403,
+      message: "You don't have permission to delete this task",
+    };
+  }
+
+  await Task.findByIdAndDelete(id);
+  return { message: "Task deleted successfully" };
+};
+
 export default {
   createTask,
   getAllTasks,
@@ -123,4 +145,5 @@ export default {
   updateTask,
   updateTaskStatus,
   assignTask,
+  deleteTask,
 };

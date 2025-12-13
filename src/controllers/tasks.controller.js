@@ -64,6 +64,15 @@ export const assignTask = async (req, res, next) => {
   }
 };
 
+export const deleteTask = async (req, res, next) => {
+  try {
+    await taskService.deleteTask(req.params.id, req.user);
+    res.json({ success: true, message: "Task deleted successfully" });
+  } catch (err) {
+    next(err);
+  }
+};
+
 export default {
   createTask,
   getAllTasks,
@@ -71,4 +80,5 @@ export default {
   updateTask,
   updateTaskStatus,
   assignTask,
+  deleteTask,
 };
