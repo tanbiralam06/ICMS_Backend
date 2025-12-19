@@ -23,6 +23,7 @@ app.use(helmet());
 app.use(cors());
 app.use(express.json());
 app.use(morgan("dev"));
+app.use("/public", express.static("public"));
 
 // Swagger
 const swaggerDocument = YAML.load("./src/docs/openapi.yaml");

@@ -2,7 +2,13 @@ import taskService from "../services/tasks.service.js";
 
 export const createTask = async (req, res, next) => {
   try {
-    const task = await taskService.createTask(req.user.id, req.body);
+    const taskData = { ...req.body };
+    if (req.files && req.files.length > 0) {
+      taskData.attachments = req.files.map((file) =>
+        file.path.replace(/\\/g, "/"),
+      );
+    }
+    const task = await taskService.createTask(req.user.id, taskData);
     res.status(201).json({ success: true, data: task });
   } catch (err) {
     next(err);
@@ -29,9 +35,16 @@ export const getTaskById = async (req, res, next) => {
 
 export const updateTask = async (req, res, next) => {
   try {
+    const taskData = { ...req.body };
+    if (req.files && req.files.length > 0) {
+      taskData.attachments = req.files.map((file) =>
+        file.path.replace(/\\/g, "/"),
+      );
+    }
+
     const task = await taskService.updateTask(
       req.params.id,
-      req.body,
+      taskData,
       req.user,
     );
     res.json({ success: true, data: task });
