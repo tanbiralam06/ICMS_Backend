@@ -78,9 +78,10 @@ export const getDailyAttendance = async (dateStr) => {
   }).lean();
 
   // 3.5. Check for Holiday or Sunday
-  // We check if the query date matches any holiday record
+  // We check if the query date falls within any holiday range
   const holiday = await Holiday.findOne({
-    date: startOfDay,
+    startDate: { $lte: endOfDay },
+    endDate: { $gte: startOfDay },
   }).lean();
 
   const isSunday = date.getDay() === 0;

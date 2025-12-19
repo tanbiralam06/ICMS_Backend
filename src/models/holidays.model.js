@@ -7,10 +7,13 @@ const holidaySchema = new mongoose.Schema(
       required: true,
       trim: true,
     },
-    date: {
+    startDate: {
       type: Date,
       required: true,
-      unique: true,
+    },
+    endDate: {
+      type: Date,
+      required: true,
     },
     year: {
       type: Number,
@@ -30,7 +33,8 @@ const holidaySchema = new mongoose.Schema(
   },
 );
 
-// Prevent duplicate holidays on the same date
-holidaySchema.index({ date: 1 }, { unique: true });
+// Prevent duplicate holidays on the same date?
+// Overlap check is better handled in controller if needed.
+// holidaySchema.index({ date: 1 }, { unique: true });
 
 export default mongoose.model("Holiday", holidaySchema);
