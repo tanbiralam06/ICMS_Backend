@@ -64,12 +64,15 @@ const invoiceSchema = new mongoose.Schema(
       gstin: String,
       taxId: String,
       bankName: String,
+      accountHolderName: String, // Added
       accountNumber: String,
       ifscCode: String,
+      swiftCode: String, // Added
       branch: String,
       logoUrl: String, // Store the path to the logo
       signatoryName: String,
       signatureUrl: String,
+      termsUrl: String, // Added
     },
 
     createdBy: {
