@@ -15,6 +15,7 @@ import taskRoutes from "./routes/tasks.routes.js";
 import commentRoutes from "./routes/comments.routes.js";
 import dashboardRoutes from "./routes/dashboard.routes.js";
 import holidayRoutes from "./routes/holidays.routes.js";
+import companyRoutes from "./routes/company.routes.js";
 
 const app = express();
 
@@ -39,6 +40,7 @@ app.use("/api/leaves", leaveRoutes);
 app.use("/api/tasks", taskRoutes);
 app.use("/api/comments", commentRoutes);
 app.use("/api/dashboard", dashboardRoutes);
+app.use("/api/company", companyRoutes);
 
 app.get("/", (req, res) => {
   res.send("ICMS Backend API is running...");
