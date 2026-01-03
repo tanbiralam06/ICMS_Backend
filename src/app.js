@@ -16,11 +16,12 @@ import commentRoutes from "./routes/comments.routes.js";
 import dashboardRoutes from "./routes/dashboard.routes.js";
 import holidayRoutes from "./routes/holidays.routes.js";
 import companyRoutes from "./routes/company.routes.js";
+import invoiceRoutes from "./routes/invoice.routes.js";
 
 const app = express();
 
 // Middleware
-app.use(helmet());
+app.use(helmet({ crossOriginResourcePolicy: { policy: "cross-origin" } }));
 app.use(cors());
 app.use(express.json());
 app.use(morgan("dev"));
@@ -41,6 +42,7 @@ app.use("/api/tasks", taskRoutes);
 app.use("/api/comments", commentRoutes);
 app.use("/api/dashboard", dashboardRoutes);
 app.use("/api/company", companyRoutes);
+app.use("/api/invoices", invoiceRoutes);
 
 app.get("/", (req, res) => {
   res.send("ICMS Backend API is running...");
