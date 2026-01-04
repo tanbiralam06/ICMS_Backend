@@ -16,7 +16,7 @@ export const createUser = async (data) => {
 };
 
 export const getAllUsers = async (query) => {
-  const { page = 1, limit = 25, search, departmentId, role } = query;
+  const { page = 1, limit = 25, search, departmentId, role, status } = query;
   const skip = (page - 1) * limit;
 
   const filter = {};
@@ -32,6 +32,9 @@ export const getAllUsers = async (query) => {
   }
   if (role) {
     filter.roleIds = role;
+  }
+  if (status) {
+    filter.status = status;
   }
 
   const users = await User.find(filter)

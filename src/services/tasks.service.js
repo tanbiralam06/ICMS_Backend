@@ -1,6 +1,26 @@
 import Task from "../models/tasks.model.js";
+import User from "../models/users.model.js";
+
+const validateActiveUsers = async (userIds) => {
+  if (!userIds || userIds.length === 0) return;
+
+  const users = await User.find({ _id: { $in: userIds } });
+  const inactiveUsers = users.filter((user) => user.status === "inactive");
+
+  if (inactiveUsers.length > 0) {
+    const inactiveNames = inactiveUsers.map((u) => u.fullName).join(", ");
+    throw {
+      statusCode: 400,
+      message: `Cannot assign task to inactive active users: ${inactiveNames}`,
+    };
+  }
+};
 
 export const createTask = async (userId, data) => {
+  if (data.assignedUsers) {
+    await validateActiveUsers(data.assignedUsers);
+  }
+
   const task = new Task({
     ...data,
     createdBy: userId,
@@ -45,6 +65,10 @@ export const getTaskById = async (id) => {
 };
 
 export const updateTask = async (id, data, user) => {
+  if (data.assignedUsers) {
+    await validateActiveUsers(data.assignedUsers);
+  }
+
   const taskToCheck = await Task.findById(id).populate("createdBy", "_id");
 
   if (!taskToCheck) {
@@ -104,6 +128,8 @@ export const updateTaskStatus = async (id, status, user) => {
 };
 
 export const assignTask = async (id, userIds) => {
+  await validateActiveUsers(userIds);
+
   const task = await Task.findByIdAndUpdate(
     id,
     { assignedUsers: userIds },
