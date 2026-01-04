@@ -30,6 +30,10 @@ export const login = async (email, password) => {
     throw { statusCode: 401, message: "Invalid email or password" };
   }
 
+  if (user.status !== "active") {
+    throw { statusCode: 403, message: "Account is deactivated" };
+  }
+
   const tokens = generateTokens(user);
 
   user.refreshToken = tokens.refreshToken;
@@ -49,6 +53,10 @@ export const refresh = async (refreshToken) => {
 
     if (!user || user.refreshToken !== refreshToken) {
       throw { statusCode: 403, message: "Invalid Refresh Token" };
+    }
+
+    if (user.status !== "active") {
+      throw { statusCode: 403, message: "Account is deactivated" };
     }
 
     const tokens = generateTokens(user);
