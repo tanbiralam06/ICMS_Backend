@@ -9,9 +9,11 @@ const generateTokens = (user) => {
     roles: user.roleIds,
   };
 
-  const accessToken = jwt.sign(payload, config.jwtSecret, { expiresIn: "15m" });
+  const accessToken = jwt.sign(payload, config.jwtSecret, {
+    expiresIn: config.jwtAccessExpiration,
+  });
   const refreshToken = jwt.sign(payload, config.jwtRefreshSecret, {
-    expiresIn: "30d",
+    expiresIn: config.jwtRefreshExpiration,
   });
 
   return { accessToken, refreshToken };
