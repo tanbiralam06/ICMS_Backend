@@ -29,13 +29,21 @@ export const createTask = async (userId, data) => {
 };
 
 export const getAllTasks = async (query) => {
-  const { page = 1, limit = 25, status, priority, assignedTo } = query;
+  const {
+    page = 1,
+    limit = 25,
+    status,
+    priority,
+    assignedTo,
+    createdBy,
+  } = query;
   const skip = (page - 1) * limit;
 
   const filter = {};
   if (status) filter.status = status;
   if (priority) filter.priority = priority;
   if (assignedTo) filter.assignedUsers = assignedTo;
+  if (createdBy) filter.createdBy = createdBy;
 
   const tasks = await Task.find(filter)
     .populate("assignedUsers", "fullName email")
