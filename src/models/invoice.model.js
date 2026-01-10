@@ -39,12 +39,26 @@ const invoiceSchema = new mongoose.Schema(
         hsnCode: { type: String },
         quantity: { type: Number, required: true },
         rate: { type: Number, required: true },
-        amount: { type: Number, required: true },
+        discountType: {
+          type: String,
+          enum: ["FLAT", "PERCENTAGE"],
+          default: "FLAT",
+        },
+        discountValue: { type: Number, default: 0 },
+        discountAmount: { type: Number, default: 0 },
+        amount: { type: Number, required: true }, // Net Amount (after item discount)
       },
     ],
 
     // Financials
     subTotal: { type: Number, required: true }, // Before Tax
+    discountType: {
+      type: String,
+      enum: ["FLAT", "PERCENTAGE"],
+      default: "FLAT",
+    },
+    discountValue: { type: Number, default: 0 },
+    discountAmount: { type: Number, default: 0 },
     taxRate: { type: Number, default: 0 }, // Percentage (e.g., 18)
     taxAmount: { type: Number, default: 0 },
     totalAmount: { type: Number, required: true }, // Grand Total
