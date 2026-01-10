@@ -3,13 +3,16 @@ import CompanyProfile from "../models/company.model.js";
 
 // Helper to generate next invoice number
 // Format: YYYY-YY-XXXX (e.g., 2025-26-0001)
-const generateInvoiceNumber = async () => {
+const generateInvoiceNumber = async (type = "TAX_INVOICE") => {
   const now = new Date();
   const year = now.getFullYear();
   const nextYear = (year + 1).toString().slice(-2);
   const financialYear = `${year}-${nextYear}`; // 2025-26
 
-  const prefix = `${year}-${nextYear}-`;
+  let prefix = `${year}-${nextYear}-`;
+  if (type === "PROFORMA") {
+    prefix = `PI-${year}-${nextYear}-`;
+  }
 
   // Find last invoice created with this prefix
   const lastInvoice = await Invoice.findOne({
@@ -19,7 +22,9 @@ const generateInvoiceNumber = async () => {
   let nextSequence = 1;
   if (lastInvoice) {
     const parts = lastInvoice.invoiceNo.split("-");
-    // Assuming format YYYY-YY-NNNN, last part is number
+    // Format:
+    // Tax: YYYY-YY-NNNN (3 parts, number is last)
+    // Proforma: PI-YYYY-YY-NNNN (4 parts, number is last)
     const lastSeq = parseInt(parts[parts.length - 1]);
     if (!isNaN(lastSeq)) {
       nextSequence = lastSeq + 1;
@@ -28,6 +33,9 @@ const generateInvoiceNumber = async () => {
 
   // Pad with leading zeros (e.g., 0001)
   const paddedSeq = nextSequence.toString().padStart(4, "0");
+  if (type === "PROFORMA") {
+    return `PI-${financialYear}-${paddedSeq}`;
+  }
   return `${financialYear}-${paddedSeq}`;
 };
 
@@ -42,7 +50,8 @@ export const createInvoice = async (req, res) => {
     }
 
     // 2. Generate Invoice Number
-    const invoiceNo = await generateInvoiceNumber();
+    const { type } = req.body;
+    const invoiceNo = await generateInvoiceNumber(type);
 
     // 3. Prepare Invoice Data
     const newInvoice = new Invoice({

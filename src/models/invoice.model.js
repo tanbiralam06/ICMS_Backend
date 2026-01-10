@@ -7,6 +7,12 @@ const invoiceSchema = new mongoose.Schema(
       required: true,
       unique: true,
     },
+    type: {
+      type: String,
+      enum: ["TAX_INVOICE", "PROFORMA"],
+      default: "TAX_INVOICE",
+      required: true,
+    },
     date: {
       type: Date,
       required: true,
