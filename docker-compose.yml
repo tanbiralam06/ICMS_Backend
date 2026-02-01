@@ -1,0 +1,90 @@
+# ============================================
+# Docker Compose - Development & Production
+# ============================================
+# Usage:
+#   Development: docker-compose up -d
+#   Production:  docker-compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+
+services:
+  # ============================================
+  # Backend API Service
+  # ============================================
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: bms-backend
+    restart: unless-stopped
+    ports:
+      - "${PORT:-5000}:5000"
+    environment:
+      - NODE_ENV=${NODE_ENV:-production}
+      - PORT=5000
+      - MONGODB_URI=mongodb://mongo:27017/icms
+      - JWT_SECRET=${JWT_SECRET:?JWT_SECRET is required}
+      - JWT_REFRESH_SECRET=${JWT_REFRESH_SECRET:?JWT_REFRESH_SECRET is required}
+      - JWT_ACCESS_EXPIRATION=${JWT_ACCESS_EXPIRATION:-15m}
+      - JWT_REFRESH_EXPIRATION=${JWT_REFRESH_EXPIRATION:-30d}
+      - OFFICE_LAT=${OFFICE_LAT:-0}
+      - OFFICE_LNG=${OFFICE_LNG:-0}
+      - OFFICE_RADIUS_METERS=${OFFICE_RADIUS_METERS:-50}
+    volumes:
+      # Persist uploaded files
+      - uploads_data:/app/public/uploads
+    depends_on:
+      mongo:
+        condition: service_healthy
+    networks:
+      - bms-network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:5000/api"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+  # ============================================
+  # MongoDB Database Service
+  # ============================================
+  mongo:
+    image: mongo:7
+    container_name: bms-mongo
+    restart: unless-stopped
+    ports:
+      - "${MONGO_PORT:-27017}:27017"
+    environment:
+      # For production, enable authentication:
+      # MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USER:-admin}
+      # MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD:?MONGO_ROOT_PASSWORD is required}
+      MONGO_INITDB_DATABASE: icms
+    volumes:
+      # Persist database data
+      - mongo_data:/data/db
+      # MongoDB config (optional)
+      - mongo_config:/data/configdb
+    networks:
+      - bms-network
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 20s
+
+# ============================================
+# Named Volumes for Data Persistence
+# ============================================
+volumes:
+  mongo_data:
+    driver: local
+  mongo_config:
+    driver: local
+  uploads_data:
+    driver: local
+
+# ============================================
+# Network Configuration
+# ============================================
+networks:
+  bms-network:
+    driver: bridge
