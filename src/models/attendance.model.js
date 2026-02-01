@@ -1,16 +1,16 @@
-import mongoose from 'mongoose';
+import mongoose from "mongoose";
 
 const attendanceSchema = new mongoose.Schema(
   {
     employeeId: {
-      type: String, 
+      type: String,
       required: true,
-      ref: "User", 
+      ref: "User",
     },
     userId: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "User",
-        required: true
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
     },
     date: {
       type: Date,
@@ -19,8 +19,16 @@ const attendanceSchema = new mongoose.Schema(
     punchIn: {
       type: Date,
     },
+    punchInDevice: {
+      type: String,
+      enum: ["Mobile", "Computer"],
+    },
     punchOut: {
       type: Date,
+    },
+    punchOutDevice: {
+      type: String,
+      enum: ["Mobile", "Computer"],
     },
     totalHours: {
       type: Number,
@@ -36,12 +44,12 @@ const attendanceSchema = new mongoose.Schema(
       ref: "Shift",
     },
     correctionRefId: {
-      type: mongoose.Schema.Types.ObjectId, 
+      type: mongoose.Schema.Types.ObjectId,
     },
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 attendanceSchema.index({ userId: 1, date: 1 }, { unique: true });

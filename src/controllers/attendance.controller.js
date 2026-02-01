@@ -12,6 +12,11 @@ export const punch = async (req, res, next) => {
       });
     }
 
+    // Detect device type from User-Agent
+    const userAgent = req.headers["user-agent"] || "";
+    const isMobile = /mobile|android|iphone|ipad|ipod/i.test(userAgent);
+    const deviceType = isMobile ? "Mobile" : "Computer";
+
     // Check distance if office coordinates are set
     if (process.env.OFFICE_LAT && process.env.OFFICE_LNG) {
       // Dynamic import to avoid issues if file doesn't exist yet,
@@ -42,7 +47,7 @@ export const punch = async (req, res, next) => {
       }
     }
 
-    const result = await attendanceService.punch(req.user.id);
+    const result = await attendanceService.punch(req.user.id, deviceType);
     res.json({
       success: true,
       message: result.type + " Successful",
