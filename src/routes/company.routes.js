@@ -2,6 +2,7 @@ import express from "express";
 import {
   getCompanyProfile,
   upsertCompanyProfile,
+  updateOfficeLocations,
 } from "../controllers/company.controller.js";
 import { uploadCompanyFiles } from "../middlewares/upload.middleware.js";
 import authMiddleware from "../middlewares/auth.middleware.js";
@@ -17,5 +18,13 @@ router.post(
   uploadCompanyFiles,
   upsertCompanyProfile,
 ); // Only admin update
+
+// Office Locations management
+router.patch(
+  "/locations",
+  authMiddleware,
+  roleMiddleware(["Admin"]),
+  updateOfficeLocations,
+);
 
 export default router;

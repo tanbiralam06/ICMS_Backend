@@ -17,27 +17,62 @@ export const punch = async (req, res, next) => {
     const isMobile = /mobile|android|iphone|ipad|ipod/i.test(userAgent);
     const deviceType = isMobile ? "Mobile" : "Computer";
 
-    // Check distance if office coordinates are set
-    if (process.env.OFFICE_LAT && process.env.OFFICE_LNG) {
-      // Dynamic import to avoid issues if file doesn't exist yet,
-      // effectively treating it as a new dependency.
-      const { calculateDistance } = await import("../utils/geoUtils.js");
+    // Geolocation validation
+    const { calculateDistance } = await import("../utils/geoUtils.js");
+    const CompanyProfile = (await import("../models/company.model.js")).default;
 
+    // Try to get locations from database first
+    const companyProfile = await CompanyProfile.findOne();
+    const dbLocations = companyProfile?.officeLocations || [];
+
+    let isWithinRange = false;
+    let nearestLocationName = "Office";
+    let nearestDistance = Infinity;
+
+    if (dbLocations.length > 0) {
+      // Check against all configured locations in DB
+      for (const loc of dbLocations) {
+        const distance = calculateDistance(
+          latitude,
+          longitude,
+          loc.latitude,
+          loc.longitude,
+        );
+        if (distance < nearestDistance) {
+          nearestDistance = distance;
+          nearestLocationName = loc.name || "Office";
+        }
+        if (distance <= (loc.radiusMeters || 50)) {
+          isWithinRange = true;
+          break;
+        }
+      }
+
+      console.log("--- Geolocation Debug ---");
+      console.log(`Received: Lat ${latitude}, Lng ${longitude}`);
+      console.log(`Checked ${dbLocations.length} location(s) from database`);
+      console.log(`Nearest: ${nearestLocationName} at ${Math.round(nearestDistance)}m`);
+
+      if (!isWithinRange) {
+        const allowedRadius = dbLocations.find(
+          (l) => l.name === nearestLocationName
+        )?.radiusMeters || 50;
+        return res.status(400).json({
+          success: false,
+          message: `You are not at any registered office. Nearest: ${nearestLocationName} (${Math.round(nearestDistance)}m away). Allowed radius: ${allowedRadius}m.`,
+        });
+      }
+    } else if (process.env.OFFICE_LAT && process.env.OFFICE_LNG) {
+      // Fallback to .env if no DB locations configured
       const officeLat = parseFloat(process.env.OFFICE_LAT);
       const officeLng = parseFloat(process.env.OFFICE_LNG);
       const allowedRadius = parseFloat(process.env.OFFICE_RADIUS_METERS || 50);
 
-      console.log("--- Geolocation Debug ---");
-      // console.log(`Received: Lat ${latitude}, Lng ${longitude}`);
-      // console.log(`Expected: Lat ${officeLat}, Lng ${officeLng}`);
+      console.log("--- Geolocation Debug (Fallback to .env) ---");
+      console.log(`Received: Lat ${latitude}, Lng ${longitude}`);
+      console.log(`Expected: Lat ${officeLat}, Lng ${officeLng}`);
 
-      const distance = calculateDistance(
-        latitude,
-        longitude,
-        officeLat,
-        officeLng,
-      );
-      // console.log(`Calculated Distance: ${distance} meters`);
+      const distance = calculateDistance(latitude, longitude, officeLat, officeLng);
 
       if (distance > allowedRadius) {
         return res.status(400).json({
@@ -46,6 +81,7 @@ export const punch = async (req, res, next) => {
         });
       }
     }
+    // If no locations in DB and no .env, allow punch (no geo-restriction)
 
     const result = await attendanceService.punch(req.user.id, deviceType);
     res.json({

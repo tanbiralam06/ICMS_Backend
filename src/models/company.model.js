@@ -70,6 +70,16 @@ const companySchema = new mongoose.Schema(
     termsUrl: {
       type: String, // URL or path to T&C document if needed, or we might want a text field? Sticking to plan.
     },
+
+    // Office Locations for Attendance (Geolocation)
+    officeLocations: [
+      {
+        name: { type: String, required: true },
+        latitude: { type: Number, required: true },
+        longitude: { type: Number, required: true },
+        radiusMeters: { type: Number, default: 50 },
+      },
+    ],
   },
   {
     timestamps: true,

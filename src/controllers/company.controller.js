@@ -77,3 +77,56 @@ export const upsertCompanyProfile = async (req, res) => {
     });
   }
 };
+
+export const updateOfficeLocations = async (req, res) => {
+  try {
+    const { officeLocations } = req.body;
+
+    if (!Array.isArray(officeLocations)) {
+      return res.status(400).json({
+        message: "officeLocations must be an array",
+      });
+    }
+
+    // Validate each location
+    for (const loc of officeLocations) {
+      if (!loc.name || loc.latitude === undefined || loc.longitude === undefined) {
+        return res.status(400).json({
+          message: "Each location must have name, latitude, and longitude",
+        });
+      }
+    }
+
+    let profile = await CompanyProfile.findOne();
+
+    if (!profile) {
+      // Create a minimal profile if none exists
+      profile = new CompanyProfile({
+        companyName: "Company",
+        address: "Address",
+        signatoryName: "Signatory",
+        bankName: "Bank",
+        accountHolderName: "Account Holder",
+        branch: "Branch",
+        accountNumber: "0000000000",
+        ifscCode: "XXXX0000000",
+        officeLocations,
+      });
+    } else {
+      profile.officeLocations = officeLocations;
+    }
+
+    await profile.save();
+
+    res.status(200).json({
+      message: "Office locations updated successfully",
+      officeLocations: profile.officeLocations,
+      updatedAt: profile.updatedAt,
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: "Error updating office locations",
+      error: error.message,
+    });
+  }
+};
