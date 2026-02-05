@@ -21,37 +21,39 @@ export const getCompanyProfile = async (req, res) => {
 
 export const upsertCompanyProfile = async (req, res) => {
   try {
-    // If files are uploaded, get their paths
-    let logoUrl = "";
-    let signatureUrl = "";
+    // Convert uploaded files to Base64 data URIs
+    let logoBase64 = "";
+    let signatureBase64 = "";
 
-    if (req.files && req.files.logo) {
-      // Store relative path for serving via static middleware
-      // Assuming 'src/public' is served at root or /static
-      // We'll store path like: /uploads/company/filename.ext
-      logoUrl = "/public/uploads/company/" + req.files.logo[0].filename;
+    if (req.files && req.files.logo && req.files.logo[0]) {
+      const logoFile = req.files.logo[0];
+      const base64String = logoFile.buffer.toString("base64");
+      logoBase64 = `data:${logoFile.mimetype};base64,${base64String}`;
     }
 
-    if (req.files && req.files.signature) {
-      signatureUrl =
-        "/public/uploads/company/" + req.files.signature[0].filename;
+    if (req.files && req.files.signature && req.files.signature[0]) {
+      const signatureFile = req.files.signature[0];
+      const base64String = signatureFile.buffer.toString("base64");
+      signatureBase64 = `data:${signatureFile.mimetype};base64,${base64String}`;
     }
 
     // Check if profile exists
     let profile = await CompanyProfile.findOne();
 
+    // Exclude officeLocations from req.body - it has its own endpoint and
+    // comes through FormData as "[object Object]" string which breaks validation
+    const { officeLocations, ...safeBody } = req.body;
+    
     const updateData = {
-      ...req.body,
+      ...safeBody,
     };
 
-    // Only update URLs if new files were uploaded
-    if (logoUrl) updateData.logoUrl = logoUrl;
-    if (signatureUrl) updateData.signatureUrl = signatureUrl;
+    // Only update Base64 fields if new files were uploaded
+    if (logoBase64) updateData.logoBase64 = logoBase64;
+    if (signatureBase64) updateData.signatureBase64 = signatureBase64;
 
     if (profile) {
       // Update existing
-      // If we are replacing an image, we could delete the old one here to save space,
-      // but let's separate that concern for now.
       Object.assign(profile, updateData);
       await profile.save();
       return res
@@ -61,8 +63,8 @@ export const upsertCompanyProfile = async (req, res) => {
       // Create new
       const newProfile = new CompanyProfile({
         ...updateData,
-        logoUrl: logoUrl, // might be empty string if not uploaded, but that's allowed by model
-        signatureUrl: signatureUrl,
+        logoBase64: logoBase64,
+        signatureBase64: signatureBase64,
       });
       await newProfile.save();
       return res.status(201).json({
@@ -71,6 +73,7 @@ export const upsertCompanyProfile = async (req, res) => {
       });
     }
   } catch (error) {
+    console.error("Error in upsertCompanyProfile:", error);
     res.status(500).json({
       message: "Error updating company profile",
       error: error.message,

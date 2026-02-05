@@ -2,13 +2,14 @@ import multer from "multer";
 import path from "path";
 import fs from "fs";
 
-// Ensure upload directory exists
+// Ensure upload directory exists (for services that still use disk storage)
 const uploadDir = path.join(process.cwd(), "public", "uploads", "company");
 if (!fs.existsSync(uploadDir)) {
   fs.mkdirSync(uploadDir, { recursive: true });
 }
 
-const storage = multer.diskStorage({
+// Disk storage for general file uploads (kept for other services)
+const diskStorage = multer.diskStorage({
   destination: function (req, file, cb) {
     cb(null, uploadDir);
   },
@@ -22,6 +23,9 @@ const storage = multer.diskStorage({
   },
 });
 
+// Memory storage for company profile files (stores as buffer for Base64 conversion)
+const memoryStorage = multer.memoryStorage();
+
 const fileFilter = (req, file, cb) => {
   // Accept images only
   if (!file.originalname.match(/\.(jpg|jpeg|png|gif|webp)$/)) {
@@ -30,11 +34,20 @@ const fileFilter = (req, file, cb) => {
   cb(null, true);
 };
 
+// Company profile uploads - uses memory storage for Base64 conversion
 export const uploadCompanyFiles = multer({
-  storage: storage,
+  storage: memoryStorage,
   fileFilter: fileFilter,
   limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
 }).fields([
   { name: "logo", maxCount: 1 },
   { name: "signature", maxCount: 1 },
 ]);
+
+// General file uploads - uses disk storage (for other services if needed)
+export const uploadToDisk = multer({
+  storage: diskStorage,
+  fileFilter: fileFilter,
+  limits: { fileSize: 5 * 1024 * 1024 },
+});
+

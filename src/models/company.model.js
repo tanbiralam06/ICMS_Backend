@@ -25,8 +25,8 @@ const companySchema = new mongoose.Schema(
       type: String,
       required: true,
     },
-    logoUrl: {
-      type: String, // Path to the uploaded logo file
+    logoBase64: {
+      type: String, // Base64 data URI of the logo image
     },
 
     // Signatory Information
@@ -34,8 +34,8 @@ const companySchema = new mongoose.Schema(
       type: String,
       required: true,
     },
-    signatureUrl: {
-      type: String, // Path to the uploaded signature file
+    signatureBase64: {
+      type: String, // Base64 data URI of the signature image
     },
 
     // Bank Details
