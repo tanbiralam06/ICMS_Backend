@@ -83,7 +83,7 @@ export const punch = async (req, res, next) => {
     }
     // If no locations in DB and no .env, allow punch (no geo-restriction)
 
-    const result = await attendanceService.punch(req.user.id, deviceType);
+    const result = await attendanceService.punch(req.user.id, deviceType, nearestLocationName);
     res.json({
       success: true,
       message: result.type + " Successful",

@@ -23,12 +23,18 @@ const attendanceSchema = new mongoose.Schema(
       type: String,
       enum: ["Mobile", "Computer"],
     },
+    punchInLocation: {
+      type: String,
+    },
     punchOut: {
       type: Date,
     },
     punchOutDevice: {
       type: String,
       enum: ["Mobile", "Computer"],
+    },
+    punchOutLocation: {
+      type: String,
     },
     totalHours: {
       type: Number,

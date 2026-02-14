@@ -9,7 +9,7 @@ const getTodayStart = () => {
   return now;
 };
 
-export const punch = async (userId, deviceType) => {
+export const punch = async (userId, deviceType, locationName) => {
   const today = getTodayStart();
 
   let attendance = await Attendance.findOne({ userId, date: today });
@@ -22,6 +22,7 @@ export const punch = async (userId, deviceType) => {
       date: today,
       punchIn: new Date(),
       punchInDevice: deviceType,
+      punchInLocation: locationName || null,
       status: "Present",
     });
     await attendance.save();
@@ -29,6 +30,7 @@ export const punch = async (userId, deviceType) => {
   } else {
     attendance.punchOut = new Date();
     attendance.punchOutDevice = deviceType;
+    attendance.punchOutLocation = locationName || null;
 
     const diffMs = attendance.punchOut - attendance.punchIn;
     const diffHrs = diffMs / (1000 * 60 * 60);
@@ -127,8 +129,10 @@ export const getDailyAttendance = async (dateStr) => {
       leaveType: leave ? leave.type : null,
       punchIn,
       punchInDevice: attendance ? attendance.punchInDevice : null,
+      punchInLocation: attendance ? attendance.punchInLocation : null,
       punchOut,
       punchOutDevice: attendance ? attendance.punchOutDevice : null,
+      punchOutLocation: attendance ? attendance.punchOutLocation : null,
       totalHours,
       holidayName: holiday ? holiday.name : null,
     };
