@@ -11,6 +11,11 @@ export const createUser = async (data) => {
     throw { statusCode: 400, message: "Email or Employee ID already exists" };
   }
 
+  // Set default password if not provided
+  if (!data.passwordHash) {
+    data.passwordHash = "password123";
+  }
+
   const user = new User(data);
   return await user.save();
 };
