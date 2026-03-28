@@ -5,7 +5,7 @@ import Holiday from "../models/holidays.model.js";
 
 const getTodayStart = () => {
   const now = new Date();
-  now.setHours(0, 0, 0, 0);
+  now.setUTCHours(0, 0, 0, 0);
   return now;
 };
 
@@ -59,9 +59,9 @@ export const getMonthlyReport = async (userId, month, year) => {
 export const getDailyAttendance = async (dateStr) => {
   const date = new Date(dateStr);
   const startOfDay = new Date(date);
-  startOfDay.setHours(0, 0, 0, 0);
+  startOfDay.setUTCHours(0, 0, 0, 0);
   const endOfDay = new Date(date);
-  endOfDay.setHours(23, 59, 59, 999);
+  endOfDay.setUTCHours(23, 59, 59, 999);
 
   // 1. Get all active users
   const users = await User.find({ status: "active" })

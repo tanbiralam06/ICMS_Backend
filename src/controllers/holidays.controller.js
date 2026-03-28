@@ -33,9 +33,11 @@ export const addHoliday = async (req, res, next) => {
     const start = new Date(startDate);
     const end = endDate ? new Date(endDate) : new Date(startDate);
 
-    // Ensure start of day for comparison
-    start.setHours(0, 0, 0, 0);
-    end.setHours(23, 59, 59, 999);
+    // Ensure we are working with UTC to avoid server-local timezone shifts
+    // These calls are fine if the server is UTC, but on a local machine (IST)
+    // start.setHours(0) would use IST. We should use setUTCHours.
+    start.setUTCHours(0, 0, 0, 0);
+    end.setUTCHours(0, 0, 0, 0);
 
     // Optional: Check for existing holidays in this range?
     // For now, let's allow it but typically you'd check overlap.
