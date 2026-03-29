@@ -2,6 +2,7 @@ import User from "../models/users.model.js";
 import Leave from "../models/leaves.model.js";
 import Attendance from "../models/attendance.model.js";
 import Task from "../models/tasks.model.js";
+import emailService from "./email.service.js";
 
 export const createUser = async (data) => {
   const existingUser = await User.findOne({
@@ -17,7 +18,22 @@ export const createUser = async (data) => {
   }
 
   const user = new User(data);
-  return await user.save();
+  const savedUser = await user.save();
+
+  // Send welcome email
+  (async () => {
+    try {
+        await emailService.notifyWelcome(savedUser.email, {
+            fullName: savedUser.fullName,
+            email: savedUser.email,
+            password: data.passwordHash || "password123"
+        });
+    } catch (err) {
+        console.error("Welcome email failed:", err.message);
+    }
+  })();
+
+  return savedUser;
 };
 
 export const getAllUsers = async (query) => {
@@ -94,6 +110,30 @@ export const updateUserStatus = async (id, status) => {
   if (!user) {
     throw { statusCode: 404, message: "User not found" };
   }
+
+  // Send notification if status is changed
+  if (status === "inactive") {
+    (async () => {
+        try {
+            await emailService.notifyAccountDeactivation(user.email, {
+                fullName: user.fullName
+            });
+        } catch (err) {
+            console.error("Account deactivation alert failed:", err.message);
+        }
+    })();
+  } else if (status === "active") {
+    (async () => {
+        try {
+            await emailService.notifyAccountActivation(user.email, {
+                fullName: user.fullName
+            });
+        } catch (err) {
+            console.error("Account activation alert failed:", err.message);
+        }
+    })();
+  }
+
   return user;
 };
 

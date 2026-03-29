@@ -1,5 +1,6 @@
 import Task from "../models/tasks.model.js";
 import User from "../models/users.model.js";
+import emailService from "./email.service.js";
 
 const validateActiveUsers = async (userIds) => {
   if (!userIds || userIds.length === 0) return;
@@ -25,7 +26,24 @@ export const createTask = async (userId, data) => {
     ...data,
     createdBy: userId,
   });
-  return await task.save();
+  const savedTask = await task.save();
+
+  // Notify assigned users
+  if (data.assignedUsers && data.assignedUsers.length > 0) {
+    const creator = await User.findById(userId);
+    const assignedUsers = await User.find({ _id: { $in: data.assignedUsers } }, "fullName email");
+    
+    emailService.notifyTaskAssignment(assignedUsers, {
+        fullName: 'Team Member', // Handled by service now
+        taskTitle: data.title,
+        priority: data.priority,
+        dueDate: data.dueDate,
+        createdBy: creator.fullName,
+        taskId: savedTask._id
+    }).catch(err => console.error("Email notification failed:", err));
+  }
+
+  return savedTask;
 };
 
 export const getAllTasks = async (query) => {
@@ -129,8 +147,22 @@ export const updateTaskStatus = async (id, status, user) => {
   }
 
   // Update the status
+  const oldStatus = task.status;
   task.status = status;
   await task.save();
+
+  // Notify creator if task is completed
+  if (status === "Completed" && oldStatus !== "Completed") {
+    const creator = await User.findById(task.createdBy);
+    if (creator && creator.email) {
+        emailService.notifyTaskStatusUpdate(creator.email, {
+            creatorName: creator.fullName,
+            taskTitle: task.title,
+            status: status,
+            updatedBy: user.fullName
+        }).catch(err => console.error("Email notification failed:", err));
+    }
+  }
 
   return task;
 };
@@ -147,6 +179,17 @@ export const assignTask = async (id, userIds) => {
   if (!task) {
     throw { statusCode: 404, message: "Task not found" };
   }
+
+  // Notify newly assigned users
+  emailService.notifyTaskAssignment(task.assignedUsers, {
+      fullName: 'Team Member', // Handled by service now
+      taskTitle: task.title,
+      priority: task.priority,
+      dueDate: task.dueDate,
+      createdBy: 'Your Manager', 
+      taskId: task._id
+  }).catch(err => console.error("Email notification failed:", err));
+
   return task;
 };
 

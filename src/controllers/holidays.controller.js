@@ -1,4 +1,6 @@
 import Holiday from "../models/holidays.model.js";
+import User from "../models/users.model.js";
+import emailService from "../services/email.service.js";
 
 export const getHolidays = async (req, res, next) => {
   try {
@@ -51,6 +53,24 @@ export const addHoliday = async (req, res, next) => {
     });
 
     await holiday.save();
+
+    // Notify all active users asynchronously
+    (async () => {
+        try {
+            const activeUsers = await User.find({ status: "active" }, "fullName email");
+            if (activeUsers.length > 0) {
+                await emailService.notifyHolidayAnnouncement(activeUsers, {
+                    name: name,
+                    startDate: startDate,
+                    endDate: endDate,
+                    description: description
+                });
+            }
+        } catch (err) {
+            console.error("Holiday broadcast failed:", err.message);
+        }
+    })();
+
     res.status(201).json({
       success: true,
       message: "Holiday added successfully",

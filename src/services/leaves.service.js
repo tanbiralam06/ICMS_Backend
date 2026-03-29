@@ -1,5 +1,6 @@
 import Leave from '../models/leaves.model.js';
 import User from '../models/users.model.js';
+import emailService from './email.service.js';
 import mongoose from 'mongoose';
 
 export const applyLeave = async (userId, data) => {
@@ -16,7 +17,34 @@ export const applyLeave = async (userId, data) => {
     days: diffDays,
   });
 
-  return await leave.save();
+  const savedLeave = await leave.save();
+
+  // Notify admins and HRs
+  (async () => {
+    try {
+      const applicant = await User.findById(userId);
+      // Notify all active users with Admin or HR roles
+      const recipients = await User.find({ 
+          roleIds: { $in: ["Admin", "HR"] },
+          status: "active" 
+      }, "fullName email");
+
+      if (recipients.length > 0) {
+          await emailService.notifyLeaveApplication(recipients, {
+              applicantName: applicant.fullName,
+              leaveType: data.type,
+              fromDate: data.fromDate,
+              toDate: data.toDate,
+              reason: data.reason,
+              days: diffDays
+          });
+      }
+    } catch (err) {
+      console.error("Leave notification failed:", err.message);
+    }
+  })();
+
+  return savedLeave;
 };
 
 export const getMyLeaves = async (userId) => {
@@ -45,7 +73,30 @@ export const updateLeaveStatus = async (leaveId, status, approverId, rejectionRe
     leave.rejectionReason = rejectionReason;
   }
 
-  return await leave.save();
+  const savedLeave = await leave.save();
+
+  // Notify applicant
+  (async () => {
+    try {
+      const applicant = await User.findById(leave.userId);
+      const approver = await User.findById(approverId);
+      if (applicant && applicant.email) {
+          emailService.notifyLeaveStatusUpdate(applicant.email, {
+              applicantName: applicant.fullName,
+              status: status,
+              leaveType: leave.type,
+              fromDate: leave.fromDate,
+              toDate: leave.toDate,
+              approverName: approver ? approver.fullName : 'Manager',
+              rejectionReason: rejectionReason
+          });
+      }
+    } catch (err) {
+      console.error("Leave status notification failed:", err);
+    }
+  })();
+
+  return savedLeave;
 };
 
 export const getLeaveBalance = async (userId) => {
