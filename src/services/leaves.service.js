@@ -106,10 +106,7 @@ export const getLeaveBalance = async (userId) => {
   ]);
 
   const allocation = {
-    Sick: 10,
-    Casual: 10,
-    Earned: 15,
-    Unpaid: 0 
+    Casual: 18
   };
 
   const balance = { ...allocation };
