@@ -15,17 +15,17 @@ router.patch("/me", userController.updateProfile);
 router.post("/", roleMiddleware(["Admin", "HR"]), userController.createUser);
 router.get(
   "/",
-  roleMiddleware(["Admin", "HR", "Manager"]),
+  roleMiddleware(["Admin", "HR", "Manager", "Accountant"]),
   userController.getAllUsers,
 );
 router.get(
   "/:id/details",
-  roleMiddleware(["Admin", "HR", "Manager"]),
+  roleMiddleware(["Admin", "HR", "Manager", "Accountant"]),
   userController.getUserDetails,
 );
 router.get(
   "/:id",
-  roleMiddleware(["Admin", "HR", "Manager"]),
+  roleMiddleware(["Admin", "HR", "Manager", "Accountant"]),
   userController.getUserById,
 );
 router.put("/:id", roleMiddleware(["Admin", "HR"]), userController.updateUser);

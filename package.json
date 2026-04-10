@@ -19,9 +19,11 @@
     "express": "^5.2.1",
     "helmet": "^8.1.0",
     "jsonwebtoken": "^9.0.3",
+    "mailgen": "^2.0.32",
     "mongoose": "^9.0.1",
     "morgan": "^1.10.1",
     "multer": "^2.0.2",
+    "nodemailer": "^8.0.4",
     "swagger-ui-express": "^5.0.1",
     "yamljs": "^0.3.0"
   },

@@ -1,4 +1,6 @@
 import Holiday from "../models/holidays.model.js";
+import User from "../models/users.model.js";
+import emailService from "../services/email.service.js";
 
 export const getHolidays = async (req, res, next) => {
   try {
@@ -33,9 +35,11 @@ export const addHoliday = async (req, res, next) => {
     const start = new Date(startDate);
     const end = endDate ? new Date(endDate) : new Date(startDate);
 
-    // Ensure start of day for comparison
-    start.setHours(0, 0, 0, 0);
-    end.setHours(23, 59, 59, 999);
+    // Ensure we are working with UTC to avoid server-local timezone shifts
+    // These calls are fine if the server is UTC, but on a local machine (IST)
+    // start.setHours(0) would use IST. We should use setUTCHours.
+    start.setUTCHours(0, 0, 0, 0);
+    end.setUTCHours(0, 0, 0, 0);
 
     // Optional: Check for existing holidays in this range?
     // For now, let's allow it but typically you'd check overlap.
@@ -49,6 +53,24 @@ export const addHoliday = async (req, res, next) => {
     });
 
     await holiday.save();
+
+    // Notify all active users asynchronously
+    (async () => {
+        try {
+            const activeUsers = await User.find({ status: "active" }, "fullName email");
+            if (activeUsers.length > 0) {
+                await emailService.notifyHolidayAnnouncement(activeUsers, {
+                    name: name,
+                    startDate: startDate,
+                    endDate: endDate,
+                    description: description
+                });
+            }
+        } catch (err) {
+            console.error("Holiday broadcast failed:", err.message);
+        }
+    })();
+
     res.status(201).json({
       success: true,
       message: "Holiday added successfully",

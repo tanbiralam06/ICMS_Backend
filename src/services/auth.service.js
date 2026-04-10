@@ -1,6 +1,7 @@
 import User from "../models/users.model.js";
 import jwt from "jsonwebtoken";
 import config from "../config/index.js";
+import emailService from "./email.service.js";
 
 const generateTokens = (user) => {
   const payload = {
@@ -82,6 +83,17 @@ export const changePassword = async (userId, oldPassword, newPassword) => {
 
   user.passwordHash = newPassword;
   await user.save();
+
+  // Send security alert
+  (async () => {
+    try {
+        await emailService.notifyPasswordChange(user.email, {
+            fullName: user.fullName
+        });
+    } catch (err) {
+        console.error("Password change alert failed:", err.message);
+    }
+  })();
 };
 
 export default {

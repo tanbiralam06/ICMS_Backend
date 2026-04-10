@@ -11,8 +11,8 @@ const router = express.Router();
 
 router.use(authMiddleware);
 
-// Create: Admin or Manager
-router.post("/", roleMiddleware(["Admin", "Manager"]), createInvoice);
+// Create: Admin, Manager or Accountant
+router.post("/", roleMiddleware(["Admin", "Manager", "Accountant"]), createInvoice);
 
 // List/View: Any auth user (or restrict if needed)
 router.get("/", getInvoices);
