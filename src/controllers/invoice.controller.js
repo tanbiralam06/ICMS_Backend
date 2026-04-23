@@ -69,9 +69,9 @@ export const createInvoice = async (req, res) => {
         ifscCode: companyProfile.ifscCode,
         swiftCode: companyProfile.swiftCode,
         branch: companyProfile.branch,
-        logoUrl: companyProfile.logoUrl,
+        logoBase64: companyProfile.logoBase64,
         signatoryName: companyProfile.signatoryName,
-        signatureUrl: companyProfile.signatureUrl,
+        signatureBase64: companyProfile.signatureBase64,
         termsUrl: companyProfile.termsUrl,
       },
       createdBy: req.user.id, // Assuming auth middleware sets this
