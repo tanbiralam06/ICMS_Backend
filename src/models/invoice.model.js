@@ -89,9 +89,9 @@ const invoiceSchema = new mongoose.Schema(
       ifscCode: String,
       swiftCode: String, // Added
       branch: String,
-      logoUrl: String, // Store the path to the logo
+      logoBase64: String,
       signatoryName: String,
-      signatureUrl: String,
+      signatureBase64: String,
       termsUrl: String, // Added
     },
 
