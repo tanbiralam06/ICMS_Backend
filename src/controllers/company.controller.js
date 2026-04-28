@@ -81,6 +81,60 @@ export const upsertCompanyProfile = async (req, res) => {
   }
 };
 
+export const getMyIp = (req, res) => {
+  const ip =
+    (req.headers["x-forwarded-for"] || "").split(",")[0].trim() || req.ip;
+  res.status(200).json({ ip });
+};
+
+export const updateAllowedIps = async (req, res) => {
+  try {
+    const { allowedIps } = req.body;
+
+    if (!Array.isArray(allowedIps)) {
+      return res.status(400).json({ message: "allowedIps must be an array" });
+    }
+
+    const ipRegex = /^(\d{1,3}\.){3}\d{1,3}$|^[a-fA-F0-9:]+$/;
+    for (const ip of allowedIps) {
+      if (typeof ip !== "string" || !ipRegex.test(ip.trim())) {
+        return res.status(400).json({ message: `Invalid IP address: ${ip}` });
+      }
+    }
+
+    let profile = await CompanyProfile.findOne();
+
+    if (!profile) {
+      profile = new CompanyProfile({
+        companyName: "Company",
+        address: "Address",
+        signatoryName: "Signatory",
+        bankName: "Bank",
+        accountHolderName: "Account Holder",
+        branch: "Branch",
+        accountNumber: "0000000000",
+        ifscCode: "XXXX0000000",
+        allowedIps: allowedIps.map((ip) => ip.trim()),
+      });
+    } else {
+      profile.allowedIps = allowedIps.map((ip) => ip.trim());
+    }
+
+    await profile.save();
+
+    res.status(200).json({
+      message: "Allowed IPs updated successfully",
+      allowedIps: profile.allowedIps,
+      updatedAt: profile.updatedAt,
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: "Error updating allowed IPs",
+      error: error.message,
+    });
+  }
+};
+
 export const updateOfficeLocations = async (req, res) => {
   try {
     const { officeLocations } = req.body;

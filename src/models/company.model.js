@@ -80,6 +80,12 @@ const companySchema = new mongoose.Schema(
         radiusMeters: { type: Number, default: 50 },
       },
     ],
+
+    // Network IP Whitelist for Attendance (fallback when GPS is inaccurate)
+    allowedIps: {
+      type: [String],
+      default: [],
+    },
   },
   {
     timestamps: true,
