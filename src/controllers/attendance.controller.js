@@ -4,7 +4,32 @@ export const punch = async (req, res, next) => {
   try {
     const { latitude, longitude } = req.body;
 
-    // Check if coordinates are provided
+    // Detect device type from User-Agent
+    const userAgent = req.headers["user-agent"] || "";
+    const isMobile = /mobile|android|iphone|ipad|ipod/i.test(userAgent);
+    const deviceType = isMobile ? "Mobile" : "Computer";
+
+    const { calculateDistance } = await import("../utils/geoUtils.js");
+    const CompanyProfile = (await import("../models/company.model.js")).default;
+
+    const companyProfile = await CompanyProfile.findOne();
+
+    // --- IP-based bypass: check if client is on an authorized office network ---
+    const clientIp =
+      (req.headers["x-forwarded-for"] || "").split(",")[0].trim() || req.ip;
+    const allowedIps = companyProfile?.allowedIps || [];
+
+    if (allowedIps.length > 0 && allowedIps.includes(clientIp)) {
+      console.log(`--- IP Bypass: ${clientIp} matched allowedIps, skipping GPS ---`);
+      const result = await attendanceService.punch(req.user.id, deviceType, "Office Network");
+      return res.json({
+        success: true,
+        message: result.type + " Successful",
+        data: result.data,
+      });
+    }
+
+    // --- GPS-based validation ---
     if (!latitude || !longitude) {
       return res.status(400).json({
         success: false,
@@ -12,17 +37,6 @@ export const punch = async (req, res, next) => {
       });
     }
 
-    // Detect device type from User-Agent
-    const userAgent = req.headers["user-agent"] || "";
-    const isMobile = /mobile|android|iphone|ipad|ipod/i.test(userAgent);
-    const deviceType = isMobile ? "Mobile" : "Computer";
-
-    // Geolocation validation
-    const { calculateDistance } = await import("../utils/geoUtils.js");
-    const CompanyProfile = (await import("../models/company.model.js")).default;
-
-    // Try to get locations from database first
-    const companyProfile = await CompanyProfile.findOne();
     const dbLocations = companyProfile?.officeLocations || [];
 
     let isWithinRange = false;
