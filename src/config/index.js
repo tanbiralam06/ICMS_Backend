@@ -19,4 +19,10 @@ export default {
   companyName: process.env.COMPANY_NAME || "Biomoneta Research India Pvt Ltd",
   appUrl: process.env.APP_URL || "http://localhost:3000",
   backendUrl: process.env.BACKEND_URL || "http://localhost:5000",
+  r2: {
+    endpoint: process.env.R2_ENDPOINT,
+    accessKeyId: process.env.R2_ACCESS_KEY_ID,
+    secretAccessKey: process.env.R2_SECRET_ACCESS_KEY,
+    bucketName: process.env.R2_BUCKET_NAME,
+  },
 };
