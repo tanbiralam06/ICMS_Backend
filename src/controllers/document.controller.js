@@ -6,7 +6,7 @@ import * as documentService from "../services/document.service.js";
  */
 export const getUploadUrl = async (req, res) => {
   try {
-    const { fileName, fileType, category } = req.query;
+    const { fileName, fileType, category, path } = req.query;
 
     if (!fileName || !fileType) {
       return res
@@ -18,6 +18,7 @@ export const getUploadUrl = async (req, res) => {
       fileName,
       fileType,
       category,
+      path,
     );
     res.status(200).json(result);
   } catch (error) {

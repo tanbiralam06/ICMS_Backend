@@ -35,6 +35,7 @@ const documentSchema = new mongoose.Schema(
         "Contract",
         "Report",
         "TaskAttachment",
+        "Inventory",
         "Other",
       ],
       default: "Other",
@@ -55,8 +56,8 @@ const documentSchema = new mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ["active", "archived", "deleted"],
-      default: "active",
+      enum: ["pending", "active", "archived", "deleted"],
+      default: "pending",
     },
   },
   {

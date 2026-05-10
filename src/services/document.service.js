@@ -16,9 +16,17 @@ const BUCKET = config.r2.bucketName;
 /**
  * Generate a presigned PUT URL for direct client-to-R2 upload.
  */
-export const getUploadUrl = async (fileName, fileType, category) => {
+export const getUploadUrl = async (fileName, fileType, category, path = null) => {
   const ext = fileName.split(".").pop();
-  const key = `documents/${category || "Other"}/${randomUUID()}.${ext}`;
+  let key;
+
+  if (path) {
+    // Custom path provided by caller (e.g. "inventory/receipts/2024/05/REC-001")
+    key = `${path}/${randomUUID()}.${ext}`;
+  } else {
+    // Default structure
+    key = `documents/${category || "Other"}/${randomUUID()}.${ext}`;
+  }
 
   const command = new PutObjectCommand({
     Bucket: BUCKET,

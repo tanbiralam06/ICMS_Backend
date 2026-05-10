@@ -1,6 +1,7 @@
 import InventoryReceipt from "../models/inventoryReceipt.model.js";
 import InventoryStock from "../models/inventoryStock.model.js";
 import InventoryUtilization from "../models/inventoryUtilization.model.js";
+import Document from "../models/document.model.js";
 
 const generateInventoryId = async () => {
   const prefix = "BM";
@@ -35,6 +36,7 @@ export const receiveItem = async (req, res) => {
       poDate,
       poNumber,
       miscellaneous,
+      documents,
     } = req.body;
 
     // 1. Create Receipt Record
@@ -51,10 +53,19 @@ export const receiveItem = async (req, res) => {
       poDate,
       poNumber,
       miscellaneous,
+      documents,
       createdBy: req.user.id,
     });
 
     await receipt.save();
+
+    // 1.1 Update documents status to active
+    if (documents && documents.length > 0) {
+      await Document.updateMany(
+        { _id: { $in: documents } },
+        { $set: { status: "active" } },
+      );
+    }
 
     // 2. Initialize Stock Record
     const stock = new InventoryStock({
@@ -131,7 +142,8 @@ export const getItemHistory = async (req, res) => {
       .sort({ createdAt: -1 });
 
     const receipt = await InventoryReceipt.findOne({ uniqueId })
-      .populate("contactPersonId", "fullName email");
+      .populate("contactPersonId", "fullName email")
+      .populate("documents");
 
     const stock = await InventoryStock.findOne({ uniqueId })
       .populate("personId", "fullName email");
