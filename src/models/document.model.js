@@ -9,22 +9,35 @@ const documentSchema = new mongoose.Schema(
     },
     originalName: {
       type: String,
-      required: true,
       trim: true,
+      // Optional for external URLs
     },
     mimeType: {
       type: String,
-      required: true,
+      // Optional for external URLs
     },
     size: {
       type: Number,
-      required: true,
+      // Optional for external URLs
     },
     key: {
       // R2 object key (path inside bucket)
       type: String,
-      required: true,
       unique: true,
+      sparse: true,
+    },
+    isExternal: {
+      type: Boolean,
+      default: false,
+    },
+    url: {
+      type: String,
+      trim: true,
+    },
+    allowedViewers: {
+      type: [mongoose.Schema.Types.ObjectId],
+      ref: "User",
+      default: [],
     },
     category: {
       type: String,

@@ -98,6 +98,15 @@ export const getUserDetails = async (req, res, next) => {
   }
 };
 
+export const getDirectory = async (req, res, next) => {
+  try {
+    const result = await userService.getDirectory();
+    res.json({ success: true, data: result });
+  } catch (err) {
+    next(err);
+  }
+};
+
 export default {
   createUser,
   getAllUsers,
@@ -107,4 +116,5 @@ export default {
   getMe,
   updateProfile,
   getUserDetails,
+  getDirectory,
 };

@@ -7,6 +7,7 @@ import {
   downloadDocument,
   getDocumentLogs,
   deleteDocument,
+  checkUrl,
 } from "../controllers/document.controller.js";
 import authMiddleware from "../middlewares/auth.middleware.js";
 import roleMiddleware from "../middlewares/role.middleware.js";
@@ -18,6 +19,9 @@ router.use(authMiddleware);
 
 // Get a presigned upload URL
 router.get("/upload-url", getUploadUrl);
+
+// Check if a URL already exists
+router.get("/check-url", checkUrl);
 
 // Confirm upload and save metadata
 router.post("/confirm", confirmUpload);

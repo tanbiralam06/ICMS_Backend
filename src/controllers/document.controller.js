@@ -8,15 +8,17 @@ export const getUploadUrl = async (req, res) => {
   try {
     const { fileName, fileType, category, path } = req.query;
 
-    if (!fileName || !fileType) {
+    if (!fileName) {
       return res
         .status(400)
-        .json({ message: "fileName and fileType are required" });
+        .json({ message: "fileName is required" });
     }
+
+    const resolvedFileType = fileType || "application/octet-stream";
 
     const result = await documentService.getUploadUrl(
       fileName,
-      fileType,
+      resolvedFileType,
       category,
       path,
     );
@@ -50,7 +52,7 @@ export const confirmUpload = async (req, res) => {
  */
 export const listDocuments = async (req, res) => {
   try {
-    const result = await documentService.listDocuments(req.query);
+    const result = await documentService.listDocuments(req.query, req.user);
     res.status(200).json(result);
   } catch (error) {
     res
@@ -65,7 +67,7 @@ export const listDocuments = async (req, res) => {
  */
 export const getDocumentById = async (req, res) => {
   try {
-    const doc = await documentService.getDocumentById(req.params.id);
+    const doc = await documentService.getDocumentById(req.params.id, req.user);
     if (!doc) {
       return res.status(404).json({ message: "Document not found" });
     }
@@ -91,7 +93,7 @@ export const downloadDocument = async (req, res) => {
     const ip = req.headers["x-forwarded-for"] || req.socket.remoteAddress;
     const result = await documentService.getDownloadUrl(
       req.params.id,
-      req.user.id,
+      req.user,
       ip,
     );
     res.status(200).json(result);
@@ -132,5 +134,24 @@ export const deleteDocument = async (req, res) => {
     res
       .status(500)
       .json({ message: "Error deleting document", error: error.message });
+  }
+};
+
+/**
+ * GET /api/documents/check-url
+ * Checks if a URL already exists in active documents.
+ */
+export const checkUrl = async (req, res) => {
+  try {
+    const { url } = req.query;
+    if (!url) {
+      return res.status(400).json({ message: "URL query parameter is required" });
+    }
+    const result = await documentService.checkUrlExists(url);
+    res.status(200).json(result);
+  } catch (error) {
+    res
+      .status(500)
+      .json({ message: "Error checking URL", error: error.message });
   }
 };
