@@ -220,6 +220,13 @@ export const getUserDetailsById = async (id) => {
   };
 };
 
+export const getDirectory = async () => {
+  const users = await User.find({ status: "active" })
+    .select("fullName email employeeId")
+    .sort({ fullName: 1 });
+  return users;
+};
+
 export default {
   createUser,
   getAllUsers,
@@ -227,4 +234,5 @@ export default {
   updateUser,
   updateUserStatus,
   getUserDetailsById,
+  getDirectory,
 };

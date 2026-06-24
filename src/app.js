@@ -18,6 +18,7 @@ import holidayRoutes from "./routes/holidays.routes.js";
 import companyRoutes from "./routes/company.routes.js";
 import invoiceRoutes from "./routes/invoice.routes.js";
 import inventoryRoutes from "./routes/inventory.routes.js";
+import documentRoutes from "./routes/document.routes.js";
 
 const app = express();
 
@@ -45,6 +46,7 @@ app.use("/api/dashboard", dashboardRoutes);
 app.use("/api/company", companyRoutes);
 app.use("/api/invoices", invoiceRoutes);
 app.use("/api/inventory", inventoryRoutes);
+app.use("/api/documents", documentRoutes);
 
 app.get("/", (req, res) => {
   res.send("ICMS Backend API is running...");

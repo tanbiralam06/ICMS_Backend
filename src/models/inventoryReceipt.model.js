@@ -58,6 +58,12 @@ const inventoryReceiptSchema = new mongoose.Schema(
       type: String,
       trim: true,
     },
+    documents: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Document",
+      },
+    ],
     createdBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",

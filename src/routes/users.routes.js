@@ -11,6 +11,9 @@ router.use(authMiddleware);
 router.get("/me", userController.getMe);
 router.patch("/me", userController.updateProfile);
 
+// Get user directory for dropdowns (any authenticated user)
+router.get("/directory", userController.getDirectory);
+
 // Admin/HR routes
 router.post("/", roleMiddleware(["Admin", "HR"]), userController.createUser);
 router.get(
