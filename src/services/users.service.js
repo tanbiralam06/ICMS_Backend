@@ -182,16 +182,26 @@ export const getUserDetailsById = async (id) => {
   };
 
   // Calculate leave statistics
+  const approvedLeavesDocs = await Leave.find({
+    userId: id,
+    status: "Approved",
+  });
+  const approvedLeavesDays = approvedLeavesDocs.reduce((sum, leave) => sum + (leave.days || 0), 0);
+
+  const pendingLeavesDocs = await Leave.find({
+    userId: id,
+    status: "Pending",
+  });
+  const pendingLeavesDays = pendingLeavesDocs.reduce((sum, leave) => sum + (leave.days || 0), 0);
+
+  const totalLeavesQuota = 18;
+  const remainingLeaves = totalLeavesQuota - approvedLeavesDays;
+
   const leaveStats = {
-    totalLeaves: await Leave.countDocuments({ userId: id }),
-    approvedLeaves: await Leave.countDocuments({
-      userId: id,
-      status: "Approved",
-    }),
-    pendingLeaves: await Leave.countDocuments({
-      userId: id,
-      status: "Pending",
-    }),
+    totalLeaves: totalLeavesQuota,
+    approvedLeaves: approvedLeavesDays,
+    pendingLeaves: pendingLeavesDays,
+    remainingLeaves: remainingLeaves,
     rejectedLeaves: await Leave.countDocuments({
       userId: id,
       status: "Rejected",
